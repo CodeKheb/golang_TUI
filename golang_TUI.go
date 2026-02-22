@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"os"
+//	"fmt"
+//	"os"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -12,73 +12,92 @@ type Contact struct {
 	lastName string
 	email string
 	phoneNumber string
-	state string
+	country string
 	business bool
 }
 var contacts []Contact
 var app = tview.NewApplication().EnableMouse(true)
+var form = tview.NewForm()
+var pages = tview.NewPages()
+var country = []string{"PH", "US", "CN", "RS"}
+
+var insideForm bool = false
 
 func main() {
-	box := tview.NewBox().
-		SetBorder(true).
-		SetTitle("Hello World")
-	screen, err := tcell.NewScreen()
-
 	text := tview.NewTextView().	
 		SetTextColor(tcell.ColorBlue).
-		SetText("(q) to quit").
+		SetText("(a) to add new contact (q) to quit").
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignCenter)
 
-	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-	flex.AddItem(box, 3, 1, false)
-	flex.AddItem(text, 1, 1, false)
+
+
+	mainFlex := tview.NewFlex().SetDirection(tview.FlexRow)
+	mainFlex.AddItem(tview.NewBox(), 0, 1, false)
+	mainFlex.AddItem(text, 1, 0, false)
+	mainFlex.SetBorder(true)
+	mainFlex.SetTitle("TESTING")
+
+	pages.AddPage("TEST", mainFlex, true, true)
+	pages.AddPage("ADD CONTACTS", form, true, false)
+
+
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Rune() == 113 { // 113 for letter q in ascii hehe
+
+		currentPage, _ := pages.GetFrontPage()
+
+		if currentPage == "ADD CONTACTS" {
+			return event
+		}
+
+
+		switch event.Rune() {
+		case 'q':
 			app.Stop()
+		case 'a':
+			if !insideForm {
+				addContactForm()
+				insideForm = true
+			}
+			pages.SwitchToPage("ADD CONTACTS")
+			app.SetFocus(form)
 			}
 			return event
 		})
-	if err := app.SetRoot(flex, true).Run(); err != nil {
+	if err := app.SetRoot(pages, true).Run(); err != nil {
 		panic(err)
 	}
-
-
-
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
-	}
-	if err := screen.Init(); err != nil {
-		fmt.Println("ERROR SCREEN:", err)
-		os.Exit(1)
 }
-//	defer screen.Fini()
+func addContactForm() {
+	form.Clear(true)
+	contact := Contact{}
 
-//	options := []string{"(1)", "(2)", "(3)", "(4)"}
-//	selected := 0
+	form.AddInputField("First Name", "", 20, nil, func(firstName string) {
+		contact.firstName = firstName
+	})
+	form.AddInputField("Last Name", "", 20, nil, func(lastName string) {
+		contact.lastName = lastName
+	})
+	form.AddInputField("Email", "", 20, nil, func(email string) {
+		contact.email = email 
+	})
+	form.AddInputField("Phone", "", 20, nil, func(phoneNumber string) {
+		contact.phoneNumber = phoneNumber 
+	})
 
-//	for {
-//		screen.Clear()
+	form.AddDropDown("Country", country, 0, func(country string, index int) {
+		contact.country = country
+	})
 
-//		for i, opt := range options {
-//			style := tcell.StyleDefault
-//			if i == selected {
-//				style = style.Foreground(tcell.ColorBlue).Background(tcell.ColorBlack)
-//			}
-//			for x, r := range opt {
-//				screen.SetContent(x, i, r, nil, style)
-//			}
-//		}
+	form.AddCheckbox("Business", false, func(business bool) {
+		contact.business = business
+	})
 
-//		screen.Show()
+	form.AddButton("Save", func() {
+		contacts = append(contacts, contact)
+		pages.SwitchToPage("TEST")
+		app.SetFocus(pages)
+	})
 
-//	}
-
-
-	screen.Clear()
-	screen.Show()
 }
-
-
