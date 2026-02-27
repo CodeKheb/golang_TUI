@@ -66,6 +66,7 @@ func main() {
 		case 'q':
 			app.Stop()
 		case 'a':
+			insideForm = false
 
 			form.Clear(true)
 			if !insideForm {
@@ -76,13 +77,10 @@ func main() {
 			app.SetFocus(form)
 			return nil 
 		case 'v':
-			form.Clear(true)
+			insideForm = false
 			viewContactForm()
 
 			pages.SwitchToPage("VIEW CONTACTS")
-			app.SetFocus(viewContacts)
-			return nil
-
 		}
 
 		return event
