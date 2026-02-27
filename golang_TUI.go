@@ -74,12 +74,14 @@ func main() {
 			}
 			pages.SwitchToPage("ADD CONTACTS")
 			app.SetFocus(form)
+			return nil 
 		case 'v':
 			form.Clear(true)
 			viewContactForm()
 
 			pages.SwitchToPage("VIEW CONTACTS")
 			app.SetFocus(viewContacts)
+			return nil
 
 		}
 
